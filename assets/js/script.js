@@ -1,5 +1,5 @@
 // Import các hàm từ gói WASM đã được biên dịch
-import init, { analyze, quick_check_single_number } from './pkg/calsdt.js';
+import init, { analyze, quick_check_single_number } from '../../pkg/calsdt.js';
 
 let analysisResults = []; // Store results globally
 
