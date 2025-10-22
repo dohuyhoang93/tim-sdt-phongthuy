@@ -1,0 +1,15 @@
+{
+  "name": "calsdt",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "calsdt_bg.wasm",
+    "calsdt.js",
+    "calsdt.d.ts"
+  ],
+  "main": "calsdt.js",
+  "types": "calsdt.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
