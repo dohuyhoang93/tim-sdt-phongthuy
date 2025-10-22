@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bộ lọc Phong thủy Số - Phiên bản Nâng cao</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container mt-4 mb-5">
+        <header class="text-center mb-4">
+            <h1>Bộ lọc Phong thủy Số (Nâng cao)</h1>
+            <p class="lead">Xây dựng với Rust và WebAssembly</p>
+        </header>
+
+        <!-- Khu vực Nhập liệu & Xuất liệu -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>1. Nhập liệu & Xuất liệu</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="file-input" class="form-label">Chọn file .txt chứa danh sách số điện thoại:</label>
+                        <input class="form-control" type="file" id="file-input" accept=".txt">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khu vực Kiểm tra Nhanh -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Kiểm tra Nhanh một số</h5>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="quick-check-input" placeholder="Nhập số điện thoại cần kiểm tra">
+                    <button class="btn btn-outline-secondary" type="button" id="quick-check-button">Kiểm tra</button>
+                </div>
+                <div class="mt-2">
+                    <span id="quick-check-result" class="fw-bold"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khu vực Cài đặt -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>2. Cài đặt Phân tích</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Chế độ phân tích:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="analysisMode" id="mode-compatibility" value="compatibility" checked>
+                        <label class="form-check-label" for="mode-compatibility">Phân tích Tương hợp Bản mệnh</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="analysisMode" id="mode-balance" value="balance">
+                        <label class="form-check-label" for="mode-balance">Tìm số Cân bằng Tuyệt đối</label>
+                    </div>
+                </div>
+
+                <!-- Tùy chọn cho Chế độ Tương hợp -->
+                <div id="compatibility-options">
+                    <div class="mb-3">
+                        <label for="user-menh" class="form-label">Chọn Bản mệnh của bạn:</label>
+                        <select class="form-select" id="user-menh">
+                            <option value="kim">Kim</option>
+                            <option value="moc">Mộc</option>
+                            <option value="thuy">Thủy</option>
+                            <option value="hoa">Hỏa</option>
+                            <option value="tho">Thổ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tùy chỉnh Nâng cao -->
+                <div class="accordion mt-3" id="advanced-accordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#advanced-settings">
+                                Tùy chỉnh Nâng cao (Bộ lọc & Điểm số)
+                            </button>
+                        </h2>
+                        <div id="advanced-settings" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <fieldset id="compatibility-settings">
+                                    <h6>Điểm Tương Hợp</h6>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2"><label>Hành Sinh Mệnh:</label><input type="number" class="form-control" id="score-sinh" value="3"></div>
+                                        <div class="col-md-4 mb-2"><label>Hành Cùng Mệnh:</label><input type="number" class="form-control" id="score-cung" value="2"></div>
+                                        <div class="col-md-4 mb-2"><label>Hành Bị Khắc (Tài):</label><input type="number" class="form-control" id="score-bi-khac" value="1"></div>
+                                        <div class="col-md-4 mb-2"><label>Hành Sinh Xuất:</label><input type="number" class="form-control" id="score-sinh-xuat" value="-1"></div>
+                                        <div class="col-md-4 mb-2"><label>Hành Khắc Mệnh:</label><input type="number" class="form-control" id="score-khac" value="-3"></div>
+                                    </div>
+                                    <hr>
+                                    <h6>Bộ lọc Cân bằng Động</h6>
+                                    <div class="row">
+                                        <div class="col-lg-6 mb-2">
+                                            <label>Hành Khắc Mệnh (tối đa)</label>
+                                            <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Số lần tối đa một hành khắc mệnh của bạn được phép xuất hiện.">(?)</span>
+                                            <input type="number" class="form-control" id="filter-khac-max" value="1">
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <label>Hành Bị Khắc (tối đa)</label>
+                                            <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Số lần tối đa một hành bị mệnh của bạn khắc được phép xuất hiện (Hành Tài).'">(?)</span>
+                                            <input type="number" class="form-control" id="filter-bi-khac-max" value="2">
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <label>Hành Sinh Mệnh (tối thiểu)</label>
+                                            <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Số lần tối thiểu một hành sinh cho mệnh của bạn phải xuất hiện.">(?)</span>
+                                            <input type="number" class="form-control" id="filter-sinh-min" value="2">
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <label>Hành Cùng Mệnh (tối thiểu)</label>
+                                            <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Số lần tối thiểu một hành cùng mệnh với bạn phải xuất hiện.">(?)</span>
+                                            <input type="number" class="form-control" id="filter-cung-min" value="2">
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <label>Tổng (Sinh + Cùng) (tối đa)</label>
+                                            <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Tổng số lần xuất hiện của hành Sinh Mệnh và Cùng Mệnh không được vượt quá con số này.">(?)</span>
+                                            <input type="number" class="form-control" id="filter-tong-max" value="5">
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <label>Hành bất kỳ (tối đa)</label>
+                                            <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Giới hạn số lần lặp lại tối đa cho một hành bất kỳ trong số điện thoại.">(?)</span>
+                                            <input type="number" class="form-control" id="filter-any-max" value="4">
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <hr>
+                                <h6>Bộ lọc Tĩnh</h6>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="toggle-static-balance" checked>
+                                    <label class="form-check-label" for="toggle-static-balance">Bật bộ lọc Chẵn/Lẻ và Tổng 8 <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Đảm bảo cân bằng Âm-Dương (chẵn-lẻ) và tránh quẻ hung (tổng 5 số đầu/cuối không chia hết cho 8).''">(?)</span></label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="toggle-completeness" checked>
+                                    <label class="form-check-label" for="toggle-completeness">Bật bộ lọc "Phải có đủ 5 hành" <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Đảm bảo số điện thoại có sự hiện diện của cả 5 yếu tố: Kim, Mộc, Thủy, Hỏa, Thổ.">(?)</span></label>
+                                </div>
+                                <hr>
+                                <h6>Bộ lọc Tùy chỉnh</h6>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="toggle-prefix-filter">
+                                            <label class="form-check-label" for="toggle-prefix-filter">Lọc theo 3 số đầu (Prefix) <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Chỉ giữ lại các số bắt đầu bằng chuỗi số bạn nhập.">(?)</span></label>
+                                        </div>
+                                        <input type="text" class="form-control" id="input-prefix" placeholder="Ví dụ: 098">
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="toggle-suffix-filter">
+                                            <label class="form-check-label" for="toggle-suffix-filter">Hậu tố chứa các số <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Chỉ giữ lại các số có 3 chữ số cuối chứa tất cả các số bạn nhập (cách nhau bởi dấu phẩy). Ví dụ: 6,8"> (?)</span></label>
+                                        </div>
+                                        <input type="text" class="form-control" id="input-suffix" placeholder="Ví dụ: 6,8">
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="toggle-blacklist-filter">
+                                        <label class="form-check-label" for="toggle-blacklist-filter">Không được chứa các số (Blacklist) <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Loại bỏ tất cả các số có chứa bất kỳ chữ số nào trong danh sách bạn nhập (cách nhau bởi dấu phẩy)."> (?)</span></label>
+                                    </div>
+                                    <input type="text" class="form-control" id="input-blacklist" placeholder="Các số bị cấm, ví dụ: 4,7">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khu vực Minh họa Ngũ Hành -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Minh họa Nguyên lý Ngũ Hành</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="assets/images/ngu-hanh-tuong-sinh-8.jpg" class="img-fluid rounded" alt="Sơ đồ Ngũ Hành Tương sinh Tương khắc" style="max-width: 400px;">
+            </div>
+        </div>
+
+        <!-- Nút Phân tích -->
+        <div class="d-grid gap-2 mb-4">
+            <button class="btn btn-primary btn-lg" id="analyze-button">
+                <span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                Phân tích và Tải kết quả
+            </button>
+        </div>
+
+        <!-- Khu vực Trạng thái -->
+        <div id="status-area" class="d-none text-center">
+            <hr>
+            <p class="fs-5">Đã xử lý xong. Tìm thấy <strong id="results-count">0</strong> số hợp lệ.</p>
+        </div>
+
+        <!-- Khu vực Hiển thị Kết quả -->
+        <div id="results-display-area" class="d-none mt-4">
+            <h5>Kết quả Phân tích</h5>
+            <div class="d-flex justify-content-end mb-2">
+                <button class="btn btn-success" id="download-button">Tải xuống file .txt</button>
+            </div>
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Số điện thoại</th>
+                            <th scope="col">Điểm số</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <!-- Dữ liệu sẽ được chèn vào đây bằng JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="assets/js/script.js"></script>
+</body>
+</html>
